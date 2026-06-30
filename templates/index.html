@@ -280,13 +280,10 @@
     .status-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       margin-bottom: 16px;
-      font-size: 13px;
-      color: var(--text-muted);
+      min-height: 16px;
     }
-
-    .status-bar .count { color: var(--text); font-weight: 600; }
 
     .spinner {
       display: inline-block;
@@ -601,10 +598,6 @@
 
       <!-- Status bar -->
       <div class="status-bar">
-        <div>
-          <span id="issueCount" class="count">—</span> total issues
-          <span id="filteredLabel" class="hidden" style="margin-left:8px;color:var(--accent);font-size:12px">(filtering <span id="filteredCount">0</span> shown)</span>
-        </div>
         <div id="loadingSpinner" class="spinner hidden"></div>
       </div>
 
@@ -786,23 +779,11 @@
 
     function renderIssues() {
       const tbody = document.getElementById('issueBody');
-      const countEl = document.getElementById('issueCount');
-      const filteredLabel = document.getElementById('filteredLabel');
-      const filteredCount = document.getElementById('filteredCount');
       const pagination = document.getElementById('pagination');
 
       const filtered = getFilteredIssues();
       const totalFiltered = filtered.length;
       const totalAll = allIssues.length;
-
-      countEl.textContent = totalAll;
-
-      if (activeAuthors.size > 0) {
-        filteredLabel.classList.remove('hidden');
-        filteredCount.textContent = totalFiltered;
-      } else {
-        filteredLabel.classList.add('hidden');
-      }
 
       // Update stats
       updateStats();
