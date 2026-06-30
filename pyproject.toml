@@ -5,5 +5,6 @@ description = "GL SDK backlog manager — browse and filter open GitHub issues b
 requires-python = ">=3.10"
 dependencies = [
     "flask>=3.0",
+    "pillow>=12.2.0",
     "requests>=2.31",
 ]
