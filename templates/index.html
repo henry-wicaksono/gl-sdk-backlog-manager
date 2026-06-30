@@ -317,7 +317,12 @@
       position: sticky;
       top: 0;
       background: var(--surface);
+      cursor: pointer;
+      user-select: none;
+      transition: color .15s;
     }
+    .issue-table th:hover { color: var(--accent); }
+    .issue-table th.sorted { color: var(--accent); }
 
     .issue-table td {
       padding: 10px 12px;
@@ -393,6 +398,7 @@
     .col-team { width: 155px; }
     .col-author { width: 160px; }
     .col-date { width: 100px; }
+    .sort-arrow { font-size: 10px; margin-left: 2px; }
 
     .project-add {
       cursor: pointer;
@@ -603,15 +609,15 @@
         <table class="issue-table">
           <thead>
             <tr>
-              <th class="col-num">#</th>
-              <th class="col-title">Title</th>
-              <th class="col-check">Title Check</th>
-              <th class="col-project">Project</th>
-              <th class="col-backlog">Backlog</th>
-              <th class="col-status">Status</th>
-              <th class="col-team">Team</th>
-              <th class="col-author">Author</th>
-              <th class="col-date">Created</th>
+              <th class="col-num" onclick="setSort('number')" data-sort="number">#<span class="sort-arrow"></span></th>
+              <th class="col-title" onclick="setSort('title')" data-sort="title">Title<span class="sort-arrow"></span></th>
+              <th class="col-check" onclick="setSort('title_check')" data-sort="title_check">Title Check<span class="sort-arrow"></span></th>
+              <th class="col-project" onclick="setSort('in_project')" data-sort="in_project">Project<span class="sort-arrow"></span></th>
+              <th class="col-backlog" onclick="setSort('story_tag')" data-sort="story_tag">Backlog<span class="sort-arrow"></span></th>
+              <th class="col-status" onclick="setSort('project_status')" data-sort="project_status">Status<span class="sort-arrow"></span></th>
+              <th class="col-team" onclick="setSort('project_team')" data-sort="project_team">Team<span class="sort-arrow"></span></th>
+              <th class="col-author" onclick="setSort('author')" data-sort="author">Author<span class="sort-arrow"></span></th>
+              <th class="col-date" onclick="setSort('created_at')" data-sort="created_at">Created<span class="sort-arrow"></span></th>
             </tr>
           </thead>
           <tbody id="issueBody">
@@ -636,6 +642,56 @@
     let activeAuthors = new Set();
     let allIssues = [];
     let currentPage = 1;
+
+    // --- Sort state ---
+    let sortColumn = 'number';
+    let sortAsc = false;
+
+    function setSort(column) {
+      if (sortColumn === column) {
+        sortAsc = !sortAsc;
+      } else {
+        sortColumn = column;
+        sortAsc = true;
+      }
+      updateSortIndicator();
+      renderIssues();
+    }
+
+    function updateSortIndicator() {
+      document.querySelectorAll('.issue-table th').forEach(th => {
+        const col = th.dataset.sort;
+        const arrow = th.querySelector('.sort-arrow');
+        th.classList.toggle('sorted', col === sortColumn);
+        if (arrow) {
+          arrow.textContent = col === sortColumn ? (sortAsc ? ' ▲' : ' ▼') : '';
+        }
+      });
+    }
+
+    function sortIssues(issues) {
+      const sorted = [...issues];
+      sorted.sort((a, b) => {
+        let va = a[sortColumn];
+        let vb = b[sortColumn];
+
+        if (va == null) va = '';
+        if (vb == null) vb = '';
+
+        if (typeof va === 'boolean') {
+          va = va ? 1 : 0;
+          vb = vb ? 1 : 0;
+        } else if (typeof va === 'string') {
+          va = va.toLowerCase();
+          vb = (typeof vb === 'string' ? vb.toLowerCase() : '');
+        }
+
+        if (va < vb) return sortAsc ? -1 : 1;
+        if (va > vb) return sortAsc ? 1 : -1;
+        return 0;
+      });
+      return sorted;
+    }
 
     // --- API ---
     async function apiGet(url) {
@@ -776,7 +832,7 @@
       const tbody = document.getElementById('issueBody');
       const pagination = document.getElementById('pagination');
 
-      const filtered = getFilteredIssues();
+      const filtered = sortIssues(getFilteredIssues());
       const totalFiltered = filtered.length;
       const totalAll = allIssues.length;
 
