@@ -120,5 +120,32 @@ def handle_authors():
     return jsonify(load_authors())
 
 
+@app.route("/api/issues/<int:number>/title", methods=["PATCH"])
+def update_issue_title(number):
+    data = request.json
+    new_title = data.get("title", "").strip()
+    if not new_title:
+        return jsonify({"error": "Title is required"}), 400
+
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "gl-sdk-backlog-manager",
+    }
+    token = _get_github_token()
+    if token:
+        headers["Authorization"] = f"token {token}"
+
+    resp = requests.patch(
+        f"https://api.github.com/repos/{GITHUB_REPO}/issues/{number}",
+        headers=headers,
+        json={"title": new_title},
+    )
+    if not resp.ok:
+        msg = resp.json().get("message", "GitHub API error")
+        return jsonify({"error": msg}), resp.status_code
+
+    return jsonify({"status": "ok", "title": new_title})
+
+
 if __name__ == "__main__":
     app.run(port=5050, debug=True)

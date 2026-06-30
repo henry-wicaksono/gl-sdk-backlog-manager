@@ -313,6 +313,23 @@
 
     .col-num { width: 80px; }
     .col-check { width: 100px; text-align: center; }
+    .title-fix { cursor: pointer; }
+    .title-fix:hover { opacity: 0.7; }
+
+    .title-editor { display: flex; flex-direction: column; gap: 6px; }
+    .title-editor-input {
+      width: 100%;
+      padding: 6px 10px;
+      background: var(--bg);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .title-editor-input:focus { border-color: var(--accent-hover); }
+    .title-editor-actions { display: flex; gap: 4px; }
     .col-author { width: 180px; }
     .col-date { width: 130px; }
 
@@ -409,7 +426,7 @@
           <tr>
             <th class="col-num">#</th>
             <th>Title</th>
-            <th class="col-check">Title Check</th>
+            <th class="col-check" title="Must start with a bracketed category: [gllm-core], [gllm-inference], etc. — lowercase letters and dashes only">Title Check</th>
             <th class="col-author">Author</th>
             <th class="col-date">Created</th>
           </tr>
@@ -582,7 +599,9 @@
         `<tr>
           <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-number">#${issue.number}</a></td>
           <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-title">${esc(issue.title)}</a></td>
-          <td style="text-align:center;font-size:16px">${issue.title_check ? '✅' : '❌'}</td>
+          <td style="text-align:center;font-size:16px">
+            ${issue.title_check ? '✅' : `<span class="title-fix" onclick="editTitle(${issue.number})" title="Click to fix title">❌</span>`}
+          </td>
           <td class="author-cell">
             <img src="${esc(issue.author_avatar)}" alt="" class="author-avatar" loading="lazy">
             ${esc(issue.author)}
@@ -640,6 +659,89 @@
       const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
       if (page < 1 || page > totalPages) return;
       currentPage = page;
+      renderIssues();
+    }
+
+    // --- Inline title editor ---
+    const TITLE_PATTERN = /^\[[a-z-]+\]/;
+
+    function editTitle(issueNumber) {
+      const issue = allIssues.find(i => i.number === issueNumber);
+      if (!issue) return;
+
+      const tbody = document.getElementById('issueBody');
+      const rows = tbody.querySelectorAll('tr');
+      let targetRow = null;
+      for (const row of rows) {
+        if (row.querySelector(`[data-issue="${issueNumber}"]`)) {
+          targetRow = row;
+          break;
+        }
+      }
+      // Fallback: find by scanning links for #number
+      if (!targetRow) {
+        for (const row of rows) {
+          const link = row.querySelector('.issue-number');
+          if (link && link.textContent === `#${issueNumber}`) {
+            targetRow = row;
+            break;
+          }
+        }
+      }
+      if (!targetRow) return;
+
+      const titleCell = targetRow.querySelectorAll('td')[1]; // 2nd column
+      if (!titleCell) return;
+
+      titleCell.innerHTML = `
+        <div class="title-editor">
+          <input type="text" class="title-editor-input" value="${esc(issue.title)}">
+          <div class="title-editor-actions">
+            <button class="btn btn-sm btn-primary" onclick="saveTitle(${issueNumber})">Save</button>
+            <button class="btn btn-sm" onclick="cancelEdit()">Cancel</button>
+          </div>
+        </div>`;
+      titleCell.querySelector('.title-editor-input').focus();
+    }
+
+    async function saveTitle(issueNumber) {
+      const input = document.querySelector('.title-editor-input');
+      if (!input) return;
+      const newTitle = input.value.trim();
+      if (!newTitle) return;
+
+      // Optimistically update local state
+      const issue = allIssues.find(i => i.number === issueNumber);
+      if (issue) {
+        issue.title = newTitle;
+        issue.title_check = TITLE_PATTERN.test(newTitle);
+      }
+      renderIssues();
+
+      try {
+        const r = await fetch(`/api/issues/${issueNumber}/title`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: newTitle }),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `HTTP ${r.status}`);
+        }
+      } catch (err) {
+        // Revert on failure — re-fetch to get authoritative state
+        const spinner = document.getElementById('loadingSpinner');
+        spinner.classList.remove('hidden');
+        try {
+          allIssues = await apiGet('/api/issues');
+        } catch (_) { /* keep stale data */ }
+        spinner.classList.add('hidden');
+        renderIssues();
+        alert('Failed to update title on GitHub: ' + err.message);
+      }
+    }
+
+    function cancelEdit() {
       renderIssues();
     }
 
