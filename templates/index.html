@@ -312,6 +312,7 @@
     }
 
     .col-num { width: 80px; }
+    .col-check { width: 100px; text-align: center; }
     .col-author { width: 180px; }
     .col-date { width: 130px; }
 
@@ -408,13 +409,14 @@
           <tr>
             <th class="col-num">#</th>
             <th>Title</th>
+            <th class="col-check">Title Check</th>
             <th class="col-author">Author</th>
             <th class="col-date">Created</th>
           </tr>
         </thead>
         <tbody id="issueBody">
           <tr>
-            <td colspan="4" class="no-issues">
+            <td colspan="5" class="no-issues">
               <p>Loading issues...</p>
             </td>
           </tr>
@@ -571,7 +573,7 @@
       const pageItems = filtered.slice(start, start + PER_PAGE);
 
       if (totalFiltered === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="no-issues"><p>${totalAll === 0 ? 'No issues loaded yet.' : 'No issues match the current filter.'}</p></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="no-issues"><p>${totalAll === 0 ? 'No issues loaded yet.' : 'No issues match the current filter.'}</p></td></tr>`;
         pagination.classList.add('hidden');
         return;
       }
@@ -580,6 +582,7 @@
         `<tr>
           <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-number">#${issue.number}</a></td>
           <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-title">${esc(issue.title)}</a></td>
+          <td style="text-align:center;font-size:16px">${issue.title_check ? '✅' : '❌'}</td>
           <td class="author-cell">
             <img src="${esc(issue.author_avatar)}" alt="" class="author-avatar" loading="lazy">
             ${esc(issue.author)}

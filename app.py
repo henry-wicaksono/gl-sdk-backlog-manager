@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 from datetime import datetime
 
@@ -82,6 +83,7 @@ def get_issues():
     issues = [i for i in all_raw if "pull_request" not in i]
 
     result = []
+    title_pattern = re.compile(r"^\[[a-z-]+\]")
     for issue in issues:
         created_at = datetime.fromisoformat(issue["created_at"].replace("Z", "+00:00"))
         result.append(
@@ -97,6 +99,7 @@ def get_issues():
                 ],
                 "comments": issue["comments"],
                 "state": issue["state"],
+                "title_check": bool(title_pattern.match(issue["title"])),
             }
         )
 
