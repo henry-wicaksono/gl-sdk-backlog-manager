@@ -72,7 +72,7 @@
 
     /* --- Sidebar --- */
     .sidebar {
-      width: 270px;
+      width: 320px;
       flex-shrink: 0;
       background: #080b11;
       padding: 24px 16px 64px;
@@ -672,8 +672,8 @@
       const container = document.getElementById('sidebarChips');
       container.innerHTML = allAuthors.map(a =>
         `<span class="sidebar-chip ${activeAuthors.has(a) ? 'active' : ''}" onclick="toggleAuthor('${esc(a)}')">
-          <span class="remove" onclick="event.stopPropagation(); removeAuthor('${esc(a)}')">✕</span>
           ${esc(a)}
+          <span class="remove" onclick="event.stopPropagation(); removeAuthor('${esc(a)}')">✕</span>
         </span>`
       ).join('');
     }
