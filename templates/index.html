@@ -277,7 +277,10 @@
     .issue-title:hover { color: var(--accent); }
 
     .author-cell {
-      display: flex;
+      white-space: nowrap;
+    }
+    .author-inner {
+      display: inline-flex;
       align-items: center;
       gap: 8px;
     }
@@ -670,8 +673,10 @@
           <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_status || '')}</td>
           <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_team || '')}</td>
           <td class="author-cell">
-            <img src="${esc(issue.author_avatar)}" alt="" class="author-avatar" loading="lazy">
-            ${esc(issue.author)}
+            <span class="author-inner">
+              <img src="${esc(issue.author_avatar)}" alt="" class="author-avatar" loading="lazy">
+              ${esc(issue.author)}
+            </span>
           </td>
           <td class="date-cell">${esc(issue.created_at)}</td>
         </tr>`
