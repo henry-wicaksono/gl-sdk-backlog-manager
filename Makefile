@@ -1,14 +1,11 @@
-.PHONY: start install clean
+.PHONY: install start clean
 
-.venv:
-	python3 -m venv .venv
+install:
+	uv sync
 
-install: .venv
-	.venv/bin/pip install -q -r requirements.txt
-
-start: install
+start:
 	@echo "  Starting GL SDK Backlog Manager on http://localhost:5050"
-	@.venv/bin/python app.py
+	@uv run python app.py
 
 clean:
 	rm -rf .venv

@@ -1,0 +1,9 @@
+[project]
+name = "gl-sdk-backlog-manager"
+version = "0.1.0"
+description = "GL SDK backlog manager — browse and filter open GitHub issues by author"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.0",
+    "requests>=2.31",
+]
