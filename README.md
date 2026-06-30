@@ -1,23 +1,32 @@
 # GL SDK Backlog Manager
 
-Browse and filter open GitHub issues from the [GL SDK](https://github.com/GDP-ADMIN/gl-sdk) repo by author. A lightweight Flask app for backlog triage.
+Browse and filter open GitHub issues from the [GL SDK](https://github.com/GDP-ADMIN/gl-sdk) repo. A Flask app for backlog triage with project board integration.
+
+## Features
+
+- **Issue table** — all open issues from `GDP-ADMIN/gl-sdk` with key metadata
+- **Title Check** — validates the `[category]` convention (lowercase + dashes); click ❌ to fix a title inline
+- **Project board** — shows which issues are on the [project board](https://github.com/orgs/GDP-ADMIN/projects/69), along with their **Status** and **Team** values; click ❌ to add an issue to the board
+- **Backlog tag** — check/set the "GL SDK Backlog" Story/Tag via a single click
+- **Author filter** — select/deselect authors from the sidebar; updates instantly
+- **Statistics card** — live counts for total issues, filter matches, title check pass/fail, project board status, and backlog tag
+- **Collapsible guide** — explains each column and action (click to toggle)
+- **Inline title editing** — click ❌ on a failing Title Check to edit the issue title directly
+- **GitHub integration** — all mutations (title update, add to project, toggle tag) go through the authenticated GitHub API
 
 ## Prerequisites
 
 - **Python 3.10+**
-- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — Python package manager (install once: `curl -LsSf https://astral.sh/uv/install.sh | sh`)
+- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — Python package manager
 - **GitHub authentication** — one of:
-  - `gh` CLI logged in (`gh auth login`) — the app will use `gh auth token`
-  - `GITHUB_TOKEN` environment variable set to a [personal access token](https://github.com/settings/tokens)
+  - `gh` CLI logged in (`gh auth login`)
+  - `GITHUB_TOKEN` environment variable set to a [personal access token](https://github.com/settings/tokens) with `repo` and `project` scopes
 
 ## Setup
 
 ```bash
-# Clone the repo
 git clone https://github.com/henry-wicaksono/gl-sdk-backlog-manager.git
 cd gl-sdk-backlog-manager
-
-# Install dependencies
 uv sync
 ```
 
@@ -27,7 +36,7 @@ uv sync
 uv run python app.py
 ```
 
-Then open http://localhost:5050 in your browser.
+Open http://localhost:5050 in your browser.
 
 Or use the Makefile shortcut:
 
@@ -37,14 +46,10 @@ make start
 
 ## How it works
 
-The app fetches all open issues from `GDP-ADMIN/gl-sdk` via the GitHub API, displays them in a table, and lets you filter by author.
-
-- **Author chips** — click to toggle which authors to include. Filtering is applied immediately.
-- **Select all / Deselect all** — bulk toggle the author chips.
-- **Update** — re-fetch the latest issues from GitHub (author filters are preserved).
-- All author selections are stored in `authors.json` (git-ignored) so your custom list persists.
+The app fetches all open issues from `GDP-ADMIN/gl-sdk` via the GitHub REST API, then enriches each issue with project board data via the GraphQL API. The display is split into a sidebar (author filter + statistics) and a main area (guide + table).
 
 ## Configuration
 
-- The default tracked authors are defined in `app.py` (`DEFAULT_AUTHORS`). You can add/remove authors from the UI — they're saved to `authors.json` in the project root.
-- The target repo is hardcoded at the top of `app.py` (`GITHUB_REPO`). Change it there if you want to point at a different repository.
+- **Tracked authors** — defined in `app.py` (`DEFAULT_AUTHORS`). Add/remove from the UI; saved to `authors.json` (git-ignored).
+- **Target repo** — change `GITHUB_REPO` in `app.py` to point at a different repository.
+- **Project board** — change `GITHUB_PROJECT_NUMBER` (default: `69`) in `app.py`.
