@@ -33,18 +33,22 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 24px 32px 64px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
     }
 
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 0;
+      padding: 20px 32px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
     .header-left {
@@ -68,6 +72,187 @@
       border-radius: 999px;
       border: 1px solid var(--border);
     }
+
+    /* --- Sidebar --- */
+    .sidebar {
+      width: 270px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 12px;
+    }
+
+    /* Author chips in sidebar */
+    .sidebar-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      border: 1px solid transparent;
+    }
+    .sidebar-chip:hover { border-color: var(--text-muted); }
+    .sidebar-chip.active {
+      background: var(--tag-active);
+      border-color: var(--tag-active-border);
+      color: var(--accent);
+    }
+    .sidebar-chip .avatar {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sidebar-chip .remove {
+      margin-left: auto;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      opacity: .4;
+      transition: opacity .15s;
+      cursor: pointer;
+    }
+    .sidebar-chip .remove:hover { opacity: 1; }
+
+    .sidebar-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .sidebar-actions .btn { flex: 1; justify-content: center; }
+
+    .add-row {
+      display: flex;
+      gap: 6px;
+    }
+    .add-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .add-row input:focus { border-color: var(--accent); }
+    .add-row input::placeholder { color: var(--text-muted); }
+
+    /* --- Stats card --- */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+    .stat-row + .stat-row { border-top: 1px solid var(--border); }
+    .stat-label { color: var(--text-muted); }
+    .stat-value { font-weight: 600; color: var(--text); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.accent { color: var(--accent); }
+
+    /* --- Main content --- */
+    .main-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* --- Guide --- */
+    .guide {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .guide-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .15s;
+    }
+    .guide-header:hover { background: #ffffff08; }
+    .guide-header h2 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .guide-arrow {
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: transform .2s;
+    }
+    .guide-arrow.open { transform: rotate(90deg); }
+    .guide-body {
+      padding: 0 16px 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      display: none;
+    }
+    .guide-body.open { display: block; }
+    .guide-body code {
+      background: var(--tag-bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .guide-body table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    .guide-body td {
+      padding: 3px 6px;
+      vertical-align: top;
+      font-size: 12px;
+    }
+    .guide-body td:first-child {
+      white-space: nowrap;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
 
     .btn {
       display: inline-flex;
@@ -98,21 +283,13 @@
     .btn-primary:hover { background: #2ea043; border-color: #3fb950; }
 
     .btn-outline { background: transparent; }
-
     .btn-sm { padding: 4px 10px; font-size: 12px; }
-
-    .btn-danger {
-      color: var(--red);
-      border-color: var(--red);
-      background: transparent;
-    }
-    .btn-danger:hover { background: #f851491a; }
 
     .status-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       font-size: 13px;
       color: var(--text-muted);
     }
@@ -132,97 +309,6 @@
 
     .hidden { display: none !important; }
 
-    /* Filter panel */
-    .filter-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
-    }
-
-    .filter-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .filter-header h2 {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: .5px;
-    }
-
-    .filter-actions { display: flex; align-items: center; gap: 10px; }
-
-    .author-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 500;
-      border: 1px solid var(--tag-border);
-      background: var(--tag-bg);
-      cursor: pointer;
-      transition: all .15s;
-      user-select: none;
-    }
-
-    .chip:hover { border-color: var(--text-muted); }
-
-    .chip.active {
-      background: var(--tag-active);
-      border-color: var(--tag-active-border);
-      color: var(--accent);
-    }
-
-    .chip .remove {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      font-size: 12px;
-      line-height: 1;
-      opacity: .5;
-      transition: opacity .15s;
-      margin-left: 2px;
-    }
-    .chip .remove:hover { opacity: 1; }
-
-    .add-author-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .add-author-row input {
-      flex: 1;
-      max-width: 240px;
-      padding: 6px 12px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: inherit;
-      outline: none;
-    }
-    .add-author-row input:focus { border-color: var(--accent); }
-    .add-author-row input::placeholder { color: var(--text-muted); }
-
     /* Issue table */
     .table-wrap {
       background: var(--surface);
@@ -238,8 +324,8 @@
     }
 
     .issue-table th {
-      padding: 10px 16px;
-      font-size: 12px;
+      padding: 10px 12px;
+      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: .5px;
@@ -252,9 +338,9 @@
     }
 
     .issue-table td {
-      padding: 12px 16px;
+      padding: 10px 12px;
       border-bottom: 1px solid var(--border);
-      font-size: 14px;
+      font-size: 13px;
       vertical-align: middle;
     }
 
@@ -265,7 +351,7 @@
       color: var(--accent);
       text-decoration: none;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12px;
     }
     .issue-number:hover { color: var(--accent-hover); }
 
@@ -276,24 +362,22 @@
     }
     .issue-title:hover { color: var(--accent); }
 
-    .author-cell {
-      white-space: nowrap;
-    }
+    .author-cell { white-space: nowrap; }
     .author-inner {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
-
     .author-avatar {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
+      flex-shrink: 0;
     }
 
     .date-cell {
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 12px;
       white-space: nowrap;
     }
 
@@ -314,22 +398,24 @@
       color: var(--red);
     }
 
-    .col-num { width: 80px; }
-    .col-check { width: 100px; text-align: center; }
-    .col-project { width: 70px; text-align: center; }
-    .col-backlog { width: 80px; text-align: center; }
-    .col-status { width: 120px; }
-    .col-team { width: 160px; }
+    .col-num { width: 60px; }
+    .col-check { width: 80px; text-align: center; }
+    .col-project { width: 60px; text-align: center; }
+    .col-backlog { width: 70px; text-align: center; }
+    .col-status { width: 100px; }
+    .col-team { width: 140px; }
+    .col-author { width: 150px; }
+
     .project-add {
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       transition: background .15s, transform .15s;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1;
     }
     .project-add:hover {
@@ -337,15 +423,16 @@
       transform: scale(1.15);
     }
     .project-add:active { transform: scale(.95); }
+
     .backlog-toggle {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       transition: background .15s, transform .15s;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1;
     }
     .backlog-toggle.clickable { cursor: pointer; }
@@ -355,16 +442,17 @@
     }
     .backlog-toggle.clickable:active { transform: scale(.95); }
     .backlog-toggle.disabled { cursor: default; opacity: .4; }
+
     .title-fix {
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       transition: background .15s, transform .15s;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1;
     }
     .title-fix:hover {
@@ -387,8 +475,6 @@
     }
     .title-editor-input:focus { border-color: var(--accent-hover); }
     .title-editor-actions { display: flex; gap: 4px; }
-    .col-author { width: 180px; }
-    .col-date { width: 130px; }
 
     /* Pagination */
     .pagination {
@@ -396,14 +482,14 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
-      padding: 16px;
+      padding: 12px;
       border-top: 1px solid var(--border);
     }
 
     .page-btn {
-      min-width: 32px;
-      height: 32px;
-      padding: 0 8px;
+      min-width: 30px;
+      height: 30px;
+      padding: 0 7px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -411,7 +497,7 @@
       border: 1px solid var(--border);
       border-radius: 6px;
       color: var(--text);
-      font-size: 13px;
+      font-size: 12px;
       font-family: inherit;
       cursor: pointer;
       transition: all .15s;
@@ -425,90 +511,134 @@
     }
 
     .page-info {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
-      margin: 0 12px;
+      margin: 0 10px;
+    }
+
+    @media (max-width: 1024px) {
+      .container { flex-direction: column; padding: 16px; }
+      .sidebar { width: 100%; position: static; }
+      .sidebar-chips { flex-direction: row; flex-wrap: wrap; }
+      .col-status, .col-team { display: none; }
     }
 
     @media (max-width: 768px) {
-      .container { padding: 16px; }
-      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .container { padding: 12px; gap: 12px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; }
       .col-author, .col-date, .col-status, .col-team { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div class="header-left">
-        <h1>GL SDK Backlog Manager</h1>
-        <span class="badge">GDP-ADMIN/gl-sdk</span>
-      </div>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>GL SDK Backlog Manager</h1>
+      <span class="badge">GDP-ADMIN/gl-sdk</span>
     </div>
+  </div>
 
-    <!-- Error banner -->
-    <div id="errorBanner" class="error-banner hidden"></div>
-
-    <!-- Author Filter Panel -->
-    <div class="filter-panel">
-      <div class="filter-header">
-        <h2>Author Filter</h2>
-        <div class="filter-actions">
-          <button class="btn btn-sm btn-outline" onclick="selectAll()">Select all</button>
-          <button class="btn btn-sm btn-outline" onclick="deselectAll()">Deselect all</button>
-          <button class="btn btn-sm btn-primary" id="updateBtn" onclick="updateIssues()">Update</button>
+  <div class="container">
+    <!-- ====== SIDEBAR ====== -->
+    <div class="sidebar">
+      <!-- Author Filter card -->
+      <div class="card">
+        <div class="card-title">Author Filter</div>
+        <div id="sidebarChips" class="sidebar-chips"></div>
+        <div class="sidebar-actions">
+          <button class="btn btn-sm btn-outline" onclick="selectAll()" style="flex:1">Select all</button>
+          <button class="btn btn-sm btn-outline" onclick="deselectAll()" style="flex:1">Deselect all</button>
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn btn-sm btn-primary" id="updateBtn" onclick="updateIssues()" style="width:100%;justify-content:center">Update</button>
+        </div>
+        <div class="add-row" style="margin-top:10px">
+          <input type="text" id="newAuthorInput" placeholder="Add username..." onkeydown="if(event.key==='Enter') addAuthor()">
+          <button class="btn btn-sm" onclick="addAuthor()">Add</button>
         </div>
       </div>
-      <div id="authorChips" class="author-chips"></div>
-      <div class="add-author-row">
-        <input type="text" id="newAuthorInput" placeholder="Add username..." onkeydown="if(event.key==='Enter') addAuthor()">
-        <button class="btn btn-sm" onclick="addAuthor()">Add</button>
+
+      <!-- Stats card -->
+      <div class="card">
+        <div class="card-title">Statistics</div>
+        <div id="statsBody">
+          <div class="stat-row"><span class="stat-label">Total issues</span><span class="stat-value" id="statTotal">—</span></div>
+          <div class="stat-row"><span class="stat-label">Showing</span><span class="stat-value" id="statShowing">—</span></div>
+          <div class="stat-row"><span class="stat-label">Title check</span><span class="stat-value" id="statTitleCheck">—</span></div>
+          <div class="stat-row"><span class="stat-label">Project board</span><span class="stat-value" id="statProject">—</span></div>
+          <div class="stat-row"><span class="stat-label">Backlog</span><span class="stat-value accent" id="statBacklog">—</span></div>
+        </div>
+        <div id="loadingSpinnerRow" class="hidden" style="text-align:center;padding:12px 0">
+          <div class="spinner"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Status bar -->
-    <div class="status-bar">
-      <div>
-        <span id="issueCount" class="count">—</span> total issues
-        <span id="filteredLabel" class="hidden" style="margin-left:8px;color:var(--accent);font-size:12px">(filtering <span id="filteredCount">0</span> shown)</span>
+    <!-- ====== MAIN CONTENT ====== -->
+    <div class="main-content">
+      <!-- Error banner -->
+      <div id="errorBanner" class="error-banner hidden"></div>
+
+      <!-- Collapsible Guide -->
+      <div class="guide">
+        <div class="guide-header" onclick="toggleGuide()">
+          <h2>How to use this board</h2>
+          <span class="guide-arrow open" id="guideArrow">▶</span>
+        </div>
+        <div class="guide-body open" id="guideBody">
+          <p><strong>Columns:</strong></p>
+          <table>
+            <tr><td>Title Check</td><td>Title must start with <code>[category]</code> — lowercase and dashes only. Click ❌ to edit.</td></tr>
+            <tr><td>Project</td><td>Issue linked to the project board. Click ❌ to add.</td></tr>
+            <tr><td>Backlog</td><td>Story/Tag field set to "GL SDK Backlog". Click to toggle.</td></tr>
+            <tr><td>Status / Team</td><td>Read from the project board. Only available for issues on the board.</td></tr>
+          </table>
+          <p style="margin-top:8px"><strong>Filters:</strong> Select/deselect authors in the sidebar. <strong>Update</strong> re-fetches the latest data from GitHub.</p>
+        </div>
       </div>
-      <div id="loadingSpinner" class="spinner hidden"></div>
-    </div>
 
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;padding:0 4px">Title convention: <code style="background:var(--tag-bg);padding:1px 5px;border-radius:3px;font-size:11px">[category]</code> — lowercase letters and dashes only. <span style="margin-left:8px">❌ Click to fix</span></div>
+      <!-- Status bar -->
+      <div class="status-bar">
+        <div>
+          <span id="issueCount" class="count">—</span> total issues
+          <span id="filteredLabel" class="hidden" style="margin-left:8px;color:var(--accent);font-size:12px">(filtering <span id="filteredCount">0</span> shown)</span>
+        </div>
+        <div id="loadingSpinner" class="spinner hidden"></div>
+      </div>
 
-    <div class="table-wrap">
-      <table class="issue-table">
-        <thead>
-          <tr>
-            <th class="col-num">#</th>
-            <th>Title</th>
-            <th class="col-check">Title Check</th>
-            <th class="col-project">Project</th>
-            <th class="col-backlog">Backlog</th>
-            <th class="col-status">Status</th>
-            <th class="col-team">Team</th>
-            <th class="col-author">Author</th>
-            <th class="col-date">Created</th>
-          </tr>
-        </thead>
-        <tbody id="issueBody">
-          <tr>
-            <td colspan="9" class="no-issues">
-              <p>Loading issues...</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- Pagination -->
-      <div id="pagination" class="pagination hidden"></div>
+      <div class="table-wrap">
+        <table class="issue-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th>Title</th>
+              <th class="col-check">Title Check</th>
+              <th class="col-project">Project</th>
+              <th class="col-backlog">Backlog</th>
+              <th class="col-status">Status</th>
+              <th class="col-team">Team</th>
+              <th class="col-author">Author</th>
+              <th class="col-date">Created</th>
+            </tr>
+          </thead>
+          <tbody id="issueBody">
+            <tr>
+              <td colspan="9" class="no-issues">
+                <p>Loading issues...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <div id="pagination" class="pagination hidden"></div>
+      </div>
     </div>
   </div>
 
   <script>
     // --- State ---
-    const PER_PAGE = 20;
+    const PER_PAGE = 25;
 
     let allAuthors = [];
     let activeAuthors = new Set();
@@ -528,10 +658,17 @@
       return r.json();
     }
 
+    // --- Guide toggle ---
+    function toggleGuide() {
+      const body = document.getElementById('guideBody');
+      const arrow = document.getElementById('guideArrow');
+      body.classList.toggle('open');
+      arrow.classList.toggle('open');
+    }
+
     // --- Authors ---
     async function loadAuthors() {
       allAuthors = await apiGet('/api/authors');
-      // Pre-select all authors so the chips look ready
       allAuthors.forEach(a => activeAuthors.add(a));
       renderChips();
     }
@@ -541,11 +678,11 @@
     }
 
     function renderChips() {
-      const container = document.getElementById('authorChips');
+      const container = document.getElementById('sidebarChips');
       container.innerHTML = allAuthors.map(a =>
-        `<span class="chip ${activeAuthors.has(a) ? 'active' : ''}" onclick="toggleAuthor('${esc(a)}')">
-          ${esc(a)}
+        `<span class="sidebar-chip ${activeAuthors.has(a) ? 'active' : ''}" onclick="toggleAuthor('${esc(a)}')">
           <span class="remove" onclick="event.stopPropagation(); removeAuthor('${esc(a)}')">✕</span>
+          ${esc(a)}
         </span>`
       ).join('');
     }
@@ -597,10 +734,12 @@
     async function updateIssues() {
       const btn = document.getElementById('updateBtn');
       const spinner = document.getElementById('loadingSpinner');
+      const spinnerRow = document.getElementById('loadingSpinnerRow');
       const errorBanner = document.getElementById('errorBanner');
 
       btn.disabled = true;
       spinner.classList.remove('hidden');
+      spinnerRow.classList.remove('hidden');
       errorBanner.classList.add('hidden');
 
       try {
@@ -613,15 +752,35 @@
       } finally {
         btn.disabled = false;
         spinner.classList.add('hidden');
+        spinnerRow.classList.add('hidden');
       }
     }
 
     function getFilteredIssues() {
-      // Any selected authors → filter by them. None selected → show all.
       if (activeAuthors.size > 0) {
         return allIssues.filter(i => activeAuthors.has(i.author));
       }
       return allIssues;
+    }
+
+    function updateStats() {
+      const filtered = getFilteredIssues();
+      const totalFiltered = filtered.length;
+      const totalAll = allIssues.length;
+
+      document.getElementById('statTotal').textContent = totalAll;
+      document.getElementById('statShowing').textContent = totalFiltered;
+
+      const titleOk = filtered.filter(i => i.title_check).length;
+      const titleBad = totalFiltered - titleOk;
+      document.getElementById('statTitleCheck').innerHTML = `${titleOk} <span style="color:var(--green)">✅</span> / ${titleBad} <span style="color:var(--red)">❌</span>`;
+
+      const inProj = filtered.filter(i => i.in_project).length;
+      const notProj = totalFiltered - inProj;
+      document.getElementById('statProject').innerHTML = `${inProj} <span style="color:var(--green)">✅</span> / ${notProj} <span style="color:var(--red)">❌</span>`;
+
+      const backlogged = filtered.filter(i => i.story_tag === 'GL SDK Backlog').length;
+      document.getElementById('statBacklog').textContent = backlogged;
     }
 
     function renderIssues() {
@@ -644,6 +803,9 @@
         filteredLabel.classList.add('hidden');
       }
 
+      // Update stats
+      updateStats();
+
       // Pagination
       const totalPages = Math.max(1, Math.ceil(totalFiltered / PER_PAGE));
       if (currentPage > totalPages) currentPage = totalPages;
@@ -661,17 +823,17 @@
         `<tr>
           <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-number">#${issue.number}</a></td>
           <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-title">${esc(issue.title)}</a></td>
-          <td style="text-align:center;font-size:16px">
+          <td style="text-align:center;font-size:15px">
             ${issue.title_check ? '✅' : `<span class="title-fix" onclick="editTitle(${issue.number})" title="Click to fix title">❌</span>`}
           </td>
-          <td style="text-align:center;font-size:16px">
+          <td style="text-align:center;font-size:15px">
             ${issue.in_project ? '✅' : `<span class="project-add" data-issue="${issue.number}" data-node-id="${esc(issue.node_id)}" onclick="addToProject(this)">❌</span>`}
           </td>
-          <td style="text-align:center;font-size:16px">
+          <td style="text-align:center;font-size:15px">
             <span class="backlog-toggle ${issue.in_project ? 'clickable' : 'disabled'}" data-issue="${issue.number}" data-item-id="${esc(issue.project_item_id || '')}" data-current="${esc(issue.story_tag || '')}" onclick="${issue.in_project ? `toggleBacklog(this)` : ''}">${issue.story_tag === 'GL SDK Backlog' ? '✅' : '❌'}</span>
           </td>
-          <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_status || '')}</td>
-          <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_team || '')}</td>
+          <td style="font-size:12px;color:var(--text-muted)">${esc(issue.project_status || '')}</td>
+          <td style="font-size:12px;color:var(--text-muted)">${esc(issue.project_team || '')}</td>
           <td class="author-cell">
             <span class="author-inner">
               <img src="${esc(issue.author_avatar)}" alt="" class="author-avatar" loading="lazy">
@@ -700,7 +862,6 @@
 
       html += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>‹ Prev</button>`;
 
-      // Show page numbers around current page
       const pages = [];
       const range = 2;
       for (let i = Math.max(1, currentPage - range); i <= Math.min(totalPages, currentPage + range); i++) {
@@ -745,24 +906,15 @@
       const rows = tbody.querySelectorAll('tr');
       let targetRow = null;
       for (const row of rows) {
-        if (row.querySelector(`[data-issue="${issueNumber}"]`)) {
+        const link = row.querySelector('.issue-number');
+        if (link && link.textContent === `#${issueNumber}`) {
           targetRow = row;
           break;
         }
       }
-      // Fallback: find by scanning links for #number
-      if (!targetRow) {
-        for (const row of rows) {
-          const link = row.querySelector('.issue-number');
-          if (link && link.textContent === `#${issueNumber}`) {
-            targetRow = row;
-            break;
-          }
-        }
-      }
       if (!targetRow) return;
 
-      const titleCell = targetRow.querySelectorAll('td')[1]; // 2nd column
+      const titleCell = targetRow.querySelectorAll('td')[1];
       if (!titleCell) return;
 
       titleCell.innerHTML = `
@@ -782,7 +934,6 @@
       const newTitle = input.value.trim();
       if (!newTitle) return;
 
-      // Optimistically update local state
       const issue = allIssues.find(i => i.number === issueNumber);
       if (issue) {
         issue.title = newTitle;
@@ -801,7 +952,6 @@
           throw new Error(err.error || `HTTP ${r.status}`);
         }
       } catch (err) {
-        // Revert on failure — re-fetch to get authoritative state
         const spinner = document.getElementById('loadingSpinner');
         spinner.classList.remove('hidden');
         try {
@@ -813,9 +963,7 @@
       }
     }
 
-    function cancelEdit() {
-      renderIssues();
-    }
+    function cancelEdit() { renderIssues(); }
 
     // --- Add to project board ---
     async function addToProject(el) {
