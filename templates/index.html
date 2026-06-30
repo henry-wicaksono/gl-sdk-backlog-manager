@@ -313,6 +313,26 @@
 
     .col-num { width: 80px; }
     .col-check { width: 100px; text-align: center; }
+    .col-project { width: 70px; text-align: center; }
+    .col-status { width: 120px; }
+    .col-team { width: 160px; }
+    .project-add {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      transition: background .15s, transform .15s;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .project-add:hover {
+      background: rgba(88, 166, 255, 0.15);
+      transform: scale(1.15);
+    }
+    .project-add:active { transform: scale(.95); }
     .title-fix {
       cursor: pointer;
       display: inline-flex;
@@ -391,7 +411,7 @@
     @media (max-width: 768px) {
       .container { padding: 16px; }
       .header { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .col-author, .col-date { display: none; }
+      .col-author, .col-date, .col-status, .col-team { display: none; }
     }
   </style>
 </head>
@@ -443,13 +463,16 @@
             <th class="col-num">#</th>
             <th>Title</th>
             <th class="col-check">Title Check</th>
+            <th class="col-project">Project</th>
+            <th class="col-status">Status</th>
+            <th class="col-team">Team</th>
             <th class="col-author">Author</th>
             <th class="col-date">Created</th>
           </tr>
         </thead>
         <tbody id="issueBody">
           <tr>
-            <td colspan="5" class="no-issues">
+            <td colspan="8" class="no-issues">
               <p>Loading issues...</p>
             </td>
           </tr>
@@ -606,7 +629,7 @@
       const pageItems = filtered.slice(start, start + PER_PAGE);
 
       if (totalFiltered === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="no-issues"><p>${totalAll === 0 ? 'No issues loaded yet.' : 'No issues match the current filter.'}</p></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="no-issues"><p>${totalAll === 0 ? 'No issues loaded yet.' : 'No issues match the current filter.'}</p></td></tr>`;
         pagination.classList.add('hidden');
         return;
       }
@@ -618,6 +641,11 @@
           <td style="text-align:center;font-size:16px">
             ${issue.title_check ? '✅' : `<span class="title-fix" onclick="editTitle(${issue.number})" title="Click to fix title">❌</span>`}
           </td>
+          <td style="text-align:center;font-size:16px">
+            ${issue.in_project ? '✅' : `<span class="project-add" data-issue="${issue.number}" data-node-id="${esc(issue.node_id)}" onclick="addToProject(this)">❌</span>`}
+          </td>
+          <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_status || '')}</td>
+          <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_team || '')}</td>
           <td class="author-cell">
             <img src="${esc(issue.author_avatar)}" alt="" class="author-avatar" loading="lazy">
             ${esc(issue.author)}
@@ -759,6 +787,33 @@
 
     function cancelEdit() {
       renderIssues();
+    }
+
+    // --- Add to project board ---
+    async function addToProject(el) {
+      const issueNumber = parseInt(el.dataset.issue);
+      const nodeId = el.dataset.nodeId;
+
+      try {
+        const r = await fetch(`/api/issues/${issueNumber}/add-to-project`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ node_id: nodeId }),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `HTTP ${r.status}`);
+        }
+
+        // Optimistically mark as in project
+        const issue = allIssues.find(i => i.number === issueNumber);
+        if (issue) {
+          issue.in_project = true;
+        }
+        renderIssues();
+      } catch (err) {
+        alert('Failed to add issue to project: ' + err.message);
+      }
     }
 
     function esc(s) {
