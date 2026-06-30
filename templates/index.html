@@ -31,27 +31,7 @@
       color: var(--text);
       min-height: 100vh;
       display: flex;
-    }
-
-    .workspace {
-      flex: 1;
-      min-width: 0;
-      display: flex;
       flex-direction: column;
-    }
-
-    .main-content {
-      flex: 1;
-      padding: 24px 32px 64px;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 24px 32px 64px;
-      display: flex;
-      gap: 24px;
-      align-items: flex-start;
     }
 
     .header {
@@ -84,16 +64,18 @@
       border: 1px solid var(--border);
     }
 
+    .layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
     /* --- Sidebar --- */
     .sidebar {
       width: 270px;
       flex-shrink: 0;
       background: #080b11;
-      min-height: 100vh;
       padding: 24px 16px 64px;
-      position: sticky;
-      top: 0;
-      align-self: flex-start;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -121,6 +103,7 @@
       flex-direction: column;
       gap: 4px;
       align-items: flex-start;
+      margin-bottom: 12px;
     }
 
     .sidebar-chip {
@@ -153,6 +136,7 @@
       opacity: .4;
       transition: opacity .15s;
       cursor: pointer;
+    }
     .sidebar-chip .remove:hover { opacity: 1; }
 
     .sidebar-actions {
@@ -200,6 +184,7 @@
     .main-content {
       flex: 1;
       min-width: 0;
+      padding: 24px 32px 64px;
     }
 
     /* --- Guide --- */
@@ -259,7 +244,6 @@
       color: var(--accent);
       font-weight: 500;
     }
-
 
     .btn {
       display: inline-flex;
@@ -524,21 +508,21 @@
     }
 
     @media (max-width: 1024px) {
-      .container { flex-direction: column; padding: 16px; }
-      .sidebar { width: 100%; position: static; }
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; }
       .sidebar-chips { flex-direction: row; flex-wrap: wrap; }
+      .main-content { padding: 16px; }
       .col-status, .col-team { display: none; }
     }
 
     @media (max-width: 768px) {
-      .container { padding: 12px; gap: 12px; }
       .header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; }
+      .main-content { padding: 12px; }
       .col-author, .col-date, .col-status, .col-team { display: none; }
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <h1>GL SDK Backlog Manager</h1>
@@ -546,8 +530,9 @@
     </div>
   </div>
 
-  <div class="sidebar">
+  <div class="layout">
     <!-- ====== SIDEBAR ====== -->
+    <div class="sidebar">
       <!-- Author Filter card -->
       <div class="card">
         <div class="card-title">Author Filter</div>
@@ -582,7 +567,6 @@
     </div>
 
     <!-- ====== MAIN CONTENT ====== -->
-    <div class="workspace">
     <div class="main-content">
       <!-- Error banner -->
       <div id="errorBanner" class="error-banner hidden"></div>
