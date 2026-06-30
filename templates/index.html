@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GL SDK Backlog Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79c0ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --tag-bg: #1f2937;
+      --tag-active: #1f6feb33;
+      --tag-border: #30363d;
+      --tag-active-border: #58a6ff66;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 32px 64px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .header-left .badge {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface);
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .btn:hover { border-color: var(--text-muted); background: #1c2333; }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+
+    .btn-primary {
+      background: #238636;
+      border-color: #2ea043;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #2ea043; border-color: #3fb950; }
+
+    .btn-outline { background: transparent; }
+
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    .btn-danger {
+      color: var(--red);
+      border-color: var(--red);
+      background: transparent;
+    }
+    .btn-danger:hover { background: #f851491a; }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .status-bar .count { color: var(--text); font-weight: 600; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+
+    /* Filter panel */
+    .filter-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+
+    .filter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .filter-header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .filter-actions { display: flex; align-items: center; gap: 10px; }
+
+    .author-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--tag-border);
+      background: var(--tag-bg);
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+    }
+
+    .chip:hover { border-color: var(--text-muted); }
+
+    .chip.active {
+      background: var(--tag-active);
+      border-color: var(--tag-active-border);
+      color: var(--accent);
+    }
+
+    .chip .remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-size: 12px;
+      line-height: 1;
+      opacity: .5;
+      transition: opacity .15s;
+      margin-left: 2px;
+    }
+    .chip .remove:hover { opacity: 1; }
+
+    .add-author-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-author-row input {
+      flex: 1;
+      max-width: 240px;
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .add-author-row input:focus { border-color: var(--accent); }
+    .add-author-row input::placeholder { color: var(--text-muted); }
+
+    /* Issue table */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .issue-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .issue-table th {
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+    }
+
+    .issue-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .issue-table tr:last-child td { border-bottom: none; }
+    .issue-table tr:hover td { background: #ffffff08; }
+
+    .issue-number {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .issue-number:hover { color: var(--accent-hover); }
+
+    .issue-title {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .issue-title:hover { color: var(--accent); }
+
+    .author-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .author-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+
+    .date-cell {
+      color: var(--text-muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .no-issues {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--text-muted);
+    }
+    .no-issues p { margin-bottom: 8px; }
+
+    .error-banner {
+      background: #f851491a;
+      border: 1px solid var(--red);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--red);
+    }
+
+    .col-num { width: 80px; }
+    .col-author { width: 180px; }
+    .col-date { width: 130px; }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .page-btn {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .page-btn:hover { border-color: var(--text-muted); background: #1c2333; }
+    .page-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
+    .page-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .page-info {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0 12px;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 16px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .col-author, .col-date { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>GL SDK Backlog Manager</h1>
+        <span class="badge">GDP-ADMIN/gl-sdk</span>
+      </div>
+    </div>
+
+    <!-- Error banner -->
+    <div id="errorBanner" class="error-banner hidden"></div>
+
+    <!-- Author Filter Panel -->
+    <div class="filter-panel">
+      <div class="filter-header">
+        <h2>Author Filter</h2>
+        <div class="filter-actions">
+          <button class="btn btn-sm btn-outline" onclick="selectAll()">Select all</button>
+          <button class="btn btn-sm btn-outline" onclick="deselectAll()">Deselect all</button>
+          <button class="btn btn-sm btn-primary" id="updateBtn" onclick="updateIssues()">Update</button>
+        </div>
+      </div>
+      <div id="authorChips" class="author-chips"></div>
+      <div class="add-author-row">
+        <input type="text" id="newAuthorInput" placeholder="Add username..." onkeydown="if(event.key==='Enter') addAuthor()">
+        <button class="btn btn-sm" onclick="addAuthor()">Add</button>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div>
+        <span id="issueCount" class="count">—</span> total issues
+        <span id="filteredLabel" class="hidden" style="margin-left:8px;color:var(--accent);font-size:12px">(filtering <span id="filteredCount">0</span> shown)</span>
+      </div>
+      <div id="loadingSpinner" class="spinner hidden"></div>
+    </div>
+
+    <!-- Issue table -->
+    <div class="table-wrap">
+      <table class="issue-table">
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th>Title</th>
+            <th class="col-author">Author</th>
+            <th class="col-date">Created</th>
+          </tr>
+        </thead>
+        <tbody id="issueBody">
+          <tr>
+            <td colspan="4" class="no-issues">
+              <p>Loading issues...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Pagination -->
+      <div id="pagination" class="pagination hidden"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- State ---
+    const PER_PAGE = 20;
+
+    let allAuthors = [];
+    let activeAuthors = new Set();
+    let allIssues = [];
+    let currentPage = 1;
+
+    // --- API ---
+    async function apiGet(url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
+      return r.json();
+    }
+
+    async function apiPost(url, body) {
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    }
+
+    // --- Authors ---
+    async function loadAuthors() {
+      allAuthors = await apiGet('/api/authors');
+      // Pre-select all authors so the chips look ready
+      allAuthors.forEach(a => activeAuthors.add(a));
+      renderChips();
+    }
+
+    async function saveAuthors() {
+      await apiPost('/api/authors', allAuthors);
+    }
+
+    function renderChips() {
+      const container = document.getElementById('authorChips');
+      container.innerHTML = allAuthors.map(a =>
+        `<span class="chip ${activeAuthors.has(a) ? 'active' : ''}" onclick="toggleAuthor('${esc(a)}')">
+          ${esc(a)}
+          <span class="remove" onclick="event.stopPropagation(); removeAuthor('${esc(a)}')">✕</span>
+        </span>`
+      ).join('');
+    }
+
+    function toggleAuthor(author) {
+      if (activeAuthors.has(author)) activeAuthors.delete(author);
+      else activeAuthors.add(author);
+      renderChips();
+      renderIssues();
+    }
+
+    async function addAuthor() {
+      const input = document.getElementById('newAuthorInput');
+      const name = input.value.trim();
+      if (!name) return;
+      if (!allAuthors.includes(name)) {
+        allAuthors.push(name);
+        activeAuthors.add(name);
+        await saveAuthors();
+        renderChips();
+        renderIssues();
+      }
+      input.value = '';
+    }
+
+    async function removeAuthor(author) {
+      allAuthors = allAuthors.filter(a => a !== author);
+      activeAuthors.delete(author);
+      await saveAuthors();
+      renderChips();
+      renderIssues();
+    }
+
+    function selectAll() {
+      allAuthors.forEach(a => activeAuthors.add(a));
+      currentPage = 1;
+      renderChips();
+      renderIssues();
+    }
+
+    function deselectAll() {
+      activeAuthors.clear();
+      currentPage = 1;
+      renderChips();
+      renderIssues();
+    }
+
+    // --- Issues ---
+    async function updateIssues() {
+      const btn = document.getElementById('updateBtn');
+      const spinner = document.getElementById('loadingSpinner');
+      const errorBanner = document.getElementById('errorBanner');
+
+      btn.disabled = true;
+      spinner.classList.remove('hidden');
+      errorBanner.classList.add('hidden');
+
+      try {
+        allIssues = await apiGet('/api/issues');
+        currentPage = 1;
+        renderIssues();
+      } catch (err) {
+        errorBanner.textContent = 'Failed to load issues: ' + err.message;
+        errorBanner.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    }
+
+    function getFilteredIssues() {
+      // Any selected authors → filter by them. None selected → show all.
+      if (activeAuthors.size > 0) {
+        return allIssues.filter(i => activeAuthors.has(i.author));
+      }
+      return allIssues;
+    }
+
+    function renderIssues() {
+      const tbody = document.getElementById('issueBody');
+      const countEl = document.getElementById('issueCount');
+      const filteredLabel = document.getElementById('filteredLabel');
+      const filteredCount = document.getElementById('filteredCount');
+      const pagination = document.getElementById('pagination');
+
+      const filtered = getFilteredIssues();
+      const totalFiltered = filtered.length;
+      const totalAll = allIssues.length;
+
+      countEl.textContent = totalAll;
+
+      if (activeAuthors.size > 0) {
+        filteredLabel.classList.remove('hidden');
+        filteredCount.textContent = totalFiltered;
+      } else {
+        filteredLabel.classList.add('hidden');
+      }
+
+      // Pagination
+      const totalPages = Math.max(1, Math.ceil(totalFiltered / PER_PAGE));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const start = (currentPage - 1) * PER_PAGE;
+      const pageItems = filtered.slice(start, start + PER_PAGE);
+
+      if (totalFiltered === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="no-issues"><p>${totalAll === 0 ? 'No issues loaded yet.' : 'No issues match the current filter.'}</p></td></tr>`;
+        pagination.classList.add('hidden');
+        return;
+      }
+
+      tbody.innerHTML = pageItems.map(issue =>
+        `<tr>
+          <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-number">#${issue.number}</a></td>
+          <td><a href="${esc(issue.html_url)}" target="_blank" class="issue-title">${esc(issue.title)}</a></td>
+          <td class="author-cell">
+            <img src="${esc(issue.author_avatar)}" alt="" class="author-avatar" loading="lazy">
+            ${esc(issue.author)}
+          </td>
+          <td class="date-cell">${esc(issue.created_at)}</td>
+        </tr>`
+      ).join('');
+
+      // Render pagination
+      if (totalPages > 1) {
+        pagination.classList.remove('hidden');
+        renderPagination(totalPages, totalFiltered);
+      } else {
+        pagination.classList.add('hidden');
+      }
+    }
+
+    function renderPagination(totalPages, totalItems) {
+      const el = document.getElementById('pagination');
+      const start = (currentPage - 1) * PER_PAGE + 1;
+      const end = Math.min(currentPage * PER_PAGE, totalItems);
+
+      let html = `<span class="page-info">${start}–${end} of ${totalItems}</span>`;
+
+      html += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>‹ Prev</button>`;
+
+      // Show page numbers around current page
+      const pages = [];
+      const range = 2;
+      for (let i = Math.max(1, currentPage - range); i <= Math.min(totalPages, currentPage + range); i++) {
+        pages.push(i);
+      }
+
+      if (pages[0] > 1) {
+        html += `<button class="page-btn" onclick="goPage(1)">1</button>`;
+        if (pages[0] > 2) html += `<span class="page-btn" style="cursor:default;border-color:transparent">…</span>`;
+      }
+
+      pages.forEach(p => {
+        html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+      });
+
+      if (pages[pages.length - 1] < totalPages) {
+        if (pages[pages.length - 1] < totalPages - 1) html += `<span class="page-btn" style="cursor:default;border-color:transparent">…</span>`;
+        html += `<button class="page-btn" onclick="goPage(${totalPages})">${totalPages}</button>`;
+      }
+
+      html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>Next ›</button>`;
+
+      el.innerHTML = html;
+    }
+
+    function goPage(page) {
+      const filtered = getFilteredIssues();
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderIssues();
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    // --- Init ---
+    loadAuthors().then(() => updateIssues());
+  </script>
+</body>
+</html>
