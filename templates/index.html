@@ -277,14 +277,6 @@
     .btn-outline { background: transparent; }
     .btn-sm { padding: 4px 10px; font-size: 12px; }
 
-    .status-bar {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      margin-bottom: 16px;
-      min-height: 16px;
-    }
-
     .spinner {
       display: inline-block;
       width: 16px;
@@ -596,11 +588,6 @@
         </div>
       </div>
 
-      <!-- Status bar -->
-      <div class="status-bar">
-        <div id="loadingSpinner" class="spinner hidden"></div>
-      </div>
-
       <div class="table-wrap">
         <table class="issue-table">
           <thead>
@@ -727,12 +714,10 @@
     // --- Issues ---
     async function updateIssues() {
       const btn = document.getElementById('updateBtn');
-      const spinner = document.getElementById('loadingSpinner');
       const spinnerRow = document.getElementById('loadingSpinnerRow');
       const errorBanner = document.getElementById('errorBanner');
 
       btn.disabled = true;
-      spinner.classList.remove('hidden');
       spinnerRow.classList.remove('hidden');
       errorBanner.classList.add('hidden');
 
@@ -745,7 +730,6 @@
         errorBanner.classList.remove('hidden');
       } finally {
         btn.disabled = false;
-        spinner.classList.add('hidden');
         spinnerRow.classList.add('hidden');
       }
     }
@@ -934,12 +918,12 @@
           throw new Error(err.error || `HTTP ${r.status}`);
         }
       } catch (err) {
-        const spinner = document.getElementById('loadingSpinner');
-        spinner.classList.remove('hidden');
+        const spinnerRow = document.getElementById('loadingSpinnerRow');
+        spinnerRow.classList.remove('hidden');
         try {
           allIssues = await apiGet('/api/issues');
         } catch (_) { /* keep stale data */ }
-        spinner.classList.add('hidden');
+        spinnerRow.classList.add('hidden');
         renderIssues();
         alert('Failed to update title on GitHub: ' + err.message);
       }
