@@ -431,6 +431,17 @@
     .backlog-toggle.clickable:active { transform: scale(.95); }
     .backlog-toggle.disabled { cursor: default; opacity: .4; }
 
+    .inline-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+    }
+
     .title-fix {
       cursor: pointer;
       display: inline-flex;
@@ -966,6 +977,10 @@
       const currentValue = el.dataset.current;
       if (!itemId) return;
 
+      // Show spinner while loading
+      el.innerHTML = '<span class="inline-spinner"></span>';
+      el.style.pointerEvents = 'none';
+
       try {
         const r = await fetch(`/api/issues/${issueNumber}/toggle-backlog`, {
           method: 'POST',
@@ -984,6 +999,7 @@
         }
         renderIssues();
       } catch (err) {
+        renderIssues(); // restore original state
         alert('Failed to toggle backlog tag: ' + err.message);
       }
     }
