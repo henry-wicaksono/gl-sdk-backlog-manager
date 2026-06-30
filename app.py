@@ -75,7 +75,7 @@ def _get_project_metadata():
             nodes {
               __typename
               ... on ProjectV2Field { id name }
-              ... on ProjectV2SingleSelectField { id name }
+              ... on ProjectV2SingleSelectField { id name options { id name } }
               ... on ProjectV2IterationField { id name }
             }
           }
@@ -113,6 +113,7 @@ def _enrich_issues_with_project_data(issues):
           number
           projectItems(first: 5) {
             nodes {
+              id
               project { id }
               fieldValues(first: 20) {
                 nodes {
@@ -152,7 +153,7 @@ def _enrich_issues_with_project_data(issues):
             if not our_items:
                 continue
             item = our_items[0]
-            info = {"status": "", "team": ""}
+            info = {"status": "", "team": "", "story_tag": "", "project_item_id": item.get("id")}
             for fv in (item.get("fieldValues") or {}).get("nodes", []):
                 if not fv or fv["__typename"] != "ProjectV2ItemFieldSingleSelectValue":
                     continue
@@ -162,6 +163,8 @@ def _enrich_issues_with_project_data(issues):
                     info["status"] = val
                 elif field_name == "Team":
                     info["team"] = val
+                elif field_name == "Story/Tag":
+                    info["story_tag"] = val
             project_map[issue_number] = info
 
     for issue in issues:
@@ -170,6 +173,8 @@ def _enrich_issues_with_project_data(issues):
             issue["in_project"] = True
             issue["project_status"] = pinfo["status"]
             issue["project_team"] = pinfo["team"]
+            issue["project_item_id"] = pinfo["project_item_id"]
+            issue["story_tag"] = pinfo["story_tag"]
 
 
 def _get_project_metadata_for_mutation():
@@ -253,6 +258,8 @@ def get_issues():
                 "in_project": False,
                 "project_status": "",
                 "project_team": "",
+                "project_item_id": None,
+                "story_tag": "",
             }
         )
 
@@ -324,11 +331,72 @@ def add_issue_to_project(number):
     }
     """
     try:
-        _graphql(mutation, {"projectId": project["id"], "contentId": node_id})
+        result = _graphql(mutation, {"projectId": project["id"], "contentId": node_id})
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
 
-    return jsonify({"status": "ok"})
+    item_id = result["data"]["addProjectV2ItemById"]["item"]["id"]
+    return jsonify({"status": "ok", "project_item_id": item_id})
+
+
+@app.route("/api/issues/<int:number>/toggle-backlog", methods=["POST"])
+def toggle_backlog(number):
+    data = request.json
+    project_item_id = data.get("project_item_id")
+    current_value = data.get("current_value", "")
+
+    if not project_item_id:
+        return jsonify({"error": "project_item_id is required"}), 400
+
+    # Resolve project and Story/Tag field info
+    project = _get_project_metadata()
+    if not project:
+        return jsonify({"error": "Project not found"}), 404
+
+    story_tag_field_id = None
+    backlog_option_id = None
+    for field in project.get("fields", {}).get("nodes", []):
+        if field.get("__typename") == "ProjectV2SingleSelectField" and field["name"] == "Story/Tag":
+            story_tag_field_id = field["id"]
+            for opt in field.get("options", []):
+                if opt["name"] == "GL SDK Backlog":
+                    backlog_option_id = opt["id"]
+                    break
+            break
+
+    if not story_tag_field_id or not backlog_option_id:
+        return jsonify({"error": "Story/Tag field or GL SDK Backlog option not found"}), 500
+
+    # Toggle: if currently "GL SDK Backlog", clear it; otherwise set it
+    new_value = "" if current_value == "GL SDK Backlog" else "GL SDK Backlog"
+    option_id = None if current_value == "GL SDK Backlog" else backlog_option_id
+
+    mutation = """
+    mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String) {
+      updateProjectV2ItemFieldValue(
+        input: {
+          projectId: $projectId
+          itemId: $itemId
+          fieldId: $fieldId
+          value: { singleSelectOptionId: $optionId }
+        }
+      ) { projectV2Item { id } }
+    }
+    """
+    try:
+        _graphql(
+            mutation,
+            {
+                "projectId": project["id"],
+                "itemId": project_item_id,
+                "fieldId": story_tag_field_id,
+                "optionId": option_id,
+            },
+        )
+    except RuntimeError as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify({"status": "ok", "story_tag": new_value})
 
 
 if __name__ == "__main__":

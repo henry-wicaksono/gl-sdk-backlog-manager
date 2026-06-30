@@ -314,6 +314,7 @@
     .col-num { width: 80px; }
     .col-check { width: 100px; text-align: center; }
     .col-project { width: 70px; text-align: center; }
+    .col-backlog { width: 80px; text-align: center; }
     .col-status { width: 120px; }
     .col-team { width: 160px; }
     .project-add {
@@ -333,6 +334,24 @@
       transform: scale(1.15);
     }
     .project-add:active { transform: scale(.95); }
+    .backlog-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      transition: background .15s, transform .15s;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .backlog-toggle.clickable { cursor: pointer; }
+    .backlog-toggle.clickable:hover {
+      background: rgba(88, 166, 255, 0.15);
+      transform: scale(1.15);
+    }
+    .backlog-toggle.clickable:active { transform: scale(.95); }
+    .backlog-toggle.disabled { cursor: default; opacity: .4; }
     .title-fix {
       cursor: pointer;
       display: inline-flex;
@@ -464,6 +483,7 @@
             <th>Title</th>
             <th class="col-check">Title Check</th>
             <th class="col-project">Project</th>
+            <th class="col-backlog">Backlog</th>
             <th class="col-status">Status</th>
             <th class="col-team">Team</th>
             <th class="col-author">Author</th>
@@ -472,7 +492,7 @@
         </thead>
         <tbody id="issueBody">
           <tr>
-            <td colspan="8" class="no-issues">
+            <td colspan="9" class="no-issues">
               <p>Loading issues...</p>
             </td>
           </tr>
@@ -629,7 +649,7 @@
       const pageItems = filtered.slice(start, start + PER_PAGE);
 
       if (totalFiltered === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="no-issues"><p>${totalAll === 0 ? 'No issues loaded yet.' : 'No issues match the current filter.'}</p></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="no-issues"><p>${totalAll === 0 ? 'No issues loaded yet.' : 'No issues match the current filter.'}</p></td></tr>`;
         pagination.classList.add('hidden');
         return;
       }
@@ -643,6 +663,9 @@
           </td>
           <td style="text-align:center;font-size:16px">
             ${issue.in_project ? '✅' : `<span class="project-add" data-issue="${issue.number}" data-node-id="${esc(issue.node_id)}" onclick="addToProject(this)">❌</span>`}
+          </td>
+          <td style="text-align:center;font-size:16px">
+            <span class="backlog-toggle ${issue.in_project ? 'clickable' : 'disabled'}" data-issue="${issue.number}" data-item-id="${esc(issue.project_item_id || '')}" data-current="${esc(issue.story_tag || '')}" onclick="${issue.in_project ? `toggleBacklog(this)` : ''}">${issue.story_tag === 'GL SDK Backlog' ? '✅' : '❌'}</span>
           </td>
           <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_status || '')}</td>
           <td style="font-size:13px;color:var(--text-muted)">${esc(issue.project_team || '')}</td>
@@ -805,14 +828,44 @@
           throw new Error(err.error || `HTTP ${r.status}`);
         }
 
-        // Optimistically mark as in project
+        const data = await r.json();
         const issue = allIssues.find(i => i.number === issueNumber);
         if (issue) {
           issue.in_project = true;
+          issue.project_item_id = data.project_item_id;
         }
         renderIssues();
       } catch (err) {
         alert('Failed to add issue to project: ' + err.message);
+      }
+    }
+
+    // --- Toggle backlog tag ---
+    async function toggleBacklog(el) {
+      const issueNumber = parseInt(el.dataset.issue);
+      const itemId = el.dataset.itemId;
+      const currentValue = el.dataset.current;
+      if (!itemId) return;
+
+      try {
+        const r = await fetch(`/api/issues/${issueNumber}/toggle-backlog`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project_item_id: itemId, current_value: currentValue }),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `HTTP ${r.status}`);
+        }
+
+        const data = await r.json();
+        const issue = allIssues.find(i => i.number === issueNumber);
+        if (issue) {
+          issue.story_tag = data.story_tag;
+        }
+        renderIssues();
+      } catch (err) {
+        alert('Failed to toggle backlog tag: ' + err.message);
       }
     }
 
