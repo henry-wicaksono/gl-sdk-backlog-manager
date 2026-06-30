@@ -2,7 +2,6 @@ import json
 import os
 import re
 import subprocess
-import time
 from datetime import datetime
 
 import requests
@@ -88,37 +87,33 @@ def _get_project_metadata():
     return result.get("data", {}).get("organization", {}).get("projectV2")
 
 
-_project_cache = {"items": None, "timestamp": 0}
+def _enrich_issues_with_project_data(issues):
+    """Add in_project, project_status, project_team to each issue dict in-place.
 
-
-def _get_project_items(project_id):
-    """Return dict[issue_number] -> {status: str, team: str}.
-
-    Only fetches items belonging to GITHUB_REPO.  Caches for 5 minutes.
+    Batch-queries each issue's projectItems via GraphQL nodes() —
+    far faster than paginating through the entire project board.
     """
-    now = time.time()
-    if _project_cache["items"] is not None and now - _project_cache["timestamp"] < 300:
-        return _project_cache["items"]
+    try:
+        project = _get_project_metadata()
+        if not project:
+            return
+        project_id = project["id"]
+    except Exception as e:
+        app.logger.warning("Failed to fetch project metadata: %s", e)
+        return
 
-    items = {}
-    cursor = None
-    page_count = 0
-    MAX_PAGES = 20
+    node_ids = [i["node_id"] for i in issues]
+    if not node_ids:
+        return
 
     query = """
-    query($projectId: ID!, $cursor: String) {
-      node(id: $projectId) {
-        ... on ProjectV2 {
-          items(first: 100, after: $cursor) {
-            pageInfo { hasNextPage endCursor }
+    query($ids: [ID!]!) {
+      nodes(ids: $ids) {
+        ... on Issue {
+          number
+          projectItems(first: 5) {
             nodes {
-              content {
-                __typename
-                ... on Issue {
-                  number
-                  repository { nameWithOwner }
-                }
-              }
+              project { id }
               fieldValues(first: 20) {
                 nodes {
                   __typename
@@ -135,23 +130,30 @@ def _get_project_items(project_id):
     }
     """
 
-    while page_count < MAX_PAGES:
-        page_count += 1
-        result = _graphql(query, {"projectId": project_id, "cursor": cursor})
-        page = result["data"]["node"]["items"]
+    project_map = {}
+    # GitHub accepts up to ~100 IDs per nodes() call
+    for i in range(0, len(node_ids), 100):
+        chunk = node_ids[i : i + 100]
+        try:
+            result = _graphql(query, {"ids": chunk})
+        except Exception as e:
+            app.logger.warning("GraphQL batch query failed: %s", e)
+            continue
 
-        for node in page.get("nodes", []):
-            if not node or not node.get("content"):
+        for node in result["data"]["nodes"]:
+            if not node:
                 continue
-            # Only keep issues from our target repo
-            repo = (node["content"].get("repository") or {}).get("nameWithOwner", "")
-            if repo != GITHUB_REPO:
+            issue_number = node["number"]
+            our_items = [
+                item
+                for item in (node.get("projectItems") or {}).get("nodes", [])
+                if item and item.get("project", {}).get("id") == project_id
+            ]
+            if not our_items:
                 continue
-
-            issue_number = node["content"]["number"]
+            item = our_items[0]
             info = {"status": "", "team": ""}
-
-            for fv in (node.get("fieldValues") or {}).get("nodes", []):
+            for fv in (item.get("fieldValues") or {}).get("nodes", []):
                 if not fv or fv["__typename"] != "ProjectV2ItemFieldSingleSelectValue":
                     continue
                 field_name = (fv.get("field") or {}).get("name", "")
@@ -160,29 +162,25 @@ def _get_project_items(project_id):
                     info["status"] = val
                 elif field_name == "Team":
                     info["team"] = val
+            project_map[issue_number] = info
 
-            items[issue_number] = info
-
-        pag = page.get("pageInfo", {})
-        if not pag.get("hasNextPage"):
-            break
-        cursor = pag.get("endCursor")
-
-    _project_cache["items"] = items
-    _project_cache["timestamp"] = now
-    return items
+    for issue in issues:
+        pinfo = project_map.get(issue["number"])
+        if pinfo:
+            issue["in_project"] = True
+            issue["project_status"] = pinfo["status"]
+            issue["project_team"] = pinfo["team"]
 
 
-def _fetch_project_data():
-    """High-level helper: returns (project_items_dict, error_string_or_None)."""
-    try:
-        project = _get_project_metadata()
-        if not project:
-            return {}, "Project not found"
-        return _get_project_items(project["id"]), None
-    except Exception as e:
-        app.logger.warning("Failed to fetch project data: %s", e)
-        return {}, str(e)
+def _get_project_metadata_for_mutation():
+    """Fetch just the project ID (no fields) — used by the add-to-project endpoint."""
+    query = """
+    query($org: String!, $projectNumber: Int!) {
+      organization(login: $org) { projectV2(number: $projectNumber) { id } }
+    }
+    """
+    result = _graphql(query, {"org": GITHUB_ORG, "projectNumber": GITHUB_PROJECT_NUMBER})
+    return result.get("data", {}).get("organization", {}).get("projectV2")
 
 
 def load_authors():
@@ -259,13 +257,7 @@ def get_issues():
         )
 
     # Enrich with project-board data
-    project_items, _ = _fetch_project_data()
-    for issue_data in result:
-        pinfo = project_items.get(issue_data["number"])
-        if pinfo:
-            issue_data["in_project"] = True
-            issue_data["project_status"] = pinfo.get("status", "")
-            issue_data["project_team"] = pinfo.get("team", "")
+    _enrich_issues_with_project_data(result)
 
     if selected_authors:
         result = [i for i in result if i["author"] in selected_authors]
@@ -320,7 +312,7 @@ def add_issue_to_project(number):
         return jsonify({"error": "node_id is required"}), 400
 
     # Resolve project ID
-    project = _get_project_metadata()
+    project = _get_project_metadata_for_mutation()
     if not project:
         return jsonify({"error": "Project not found or inaccessible"}), 404
 
