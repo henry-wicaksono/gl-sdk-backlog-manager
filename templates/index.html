@@ -30,6 +30,19 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      display: flex;
+    }
+
+    .workspace {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 24px 32px 64px;
     }
 
     .container {
@@ -47,8 +60,6 @@
       justify-content: space-between;
       padding: 20px 32px;
       border-bottom: 1px solid var(--border);
-      max-width: 1400px;
-      margin: 0 auto;
     }
 
     .header-left {
@@ -77,11 +88,15 @@
     .sidebar {
       width: 270px;
       flex-shrink: 0;
+      background: #080b11;
+      min-height: 100vh;
+      padding: 24px 16px 64px;
+      position: sticky;
+      top: 0;
+      align-self: flex-start;
       display: flex;
       flex-direction: column;
       gap: 16px;
-      position: sticky;
-      top: 24px;
     }
 
     .card {
@@ -105,11 +120,11 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      margin-bottom: 12px;
+      align-items: flex-start;
     }
 
     .sidebar-chip {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 6px 10px;
@@ -127,14 +142,7 @@
       border-color: var(--tag-active-border);
       color: var(--accent);
     }
-    .sidebar-chip .avatar {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
     .sidebar-chip .remove {
-      margin-left: auto;
       width: 16px;
       height: 16px;
       border-radius: 50%;
@@ -145,7 +153,6 @@
       opacity: .4;
       transition: opacity .15s;
       cursor: pointer;
-    }
     .sidebar-chip .remove:hover { opacity: 1; }
 
     .sidebar-actions {
@@ -539,9 +546,8 @@
     </div>
   </div>
 
-  <div class="container">
+  <div class="sidebar">
     <!-- ====== SIDEBAR ====== -->
-    <div class="sidebar">
       <!-- Author Filter card -->
       <div class="card">
         <div class="card-title">Author Filter</div>
@@ -576,6 +582,7 @@
     </div>
 
     <!-- ====== MAIN CONTENT ====== -->
+    <div class="workspace">
     <div class="main-content">
       <!-- Error banner -->
       <div id="errorBanner" class="error-banner hidden"></div>
