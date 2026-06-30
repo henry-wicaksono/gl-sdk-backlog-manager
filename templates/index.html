@@ -911,12 +911,10 @@
       const newTitle = input.value.trim();
       if (!newTitle) return;
 
-      const issue = allIssues.find(i => i.number === issueNumber);
-      if (issue) {
-        issue.title = newTitle;
-        issue.title_check = TITLE_PATTERN.test(newTitle);
-      }
-      renderIssues();
+      // Show spinner in the editor while saving
+      const actions = document.querySelector('.title-editor-actions');
+      if (!actions) return;
+      actions.innerHTML = '<span class="inline-spinner"></span>';
 
       try {
         const r = await fetch(`/api/issues/${issueNumber}/title`, {
@@ -928,14 +926,16 @@
           const err = await r.json().catch(() => ({}));
           throw new Error(err.error || `HTTP ${r.status}`);
         }
-      } catch (err) {
-        const spinnerRow = document.getElementById('loadingSpinnerRow');
-        spinnerRow.classList.remove('hidden');
-        try {
-          allIssues = await apiGet('/api/issues');
-        } catch (_) { /* keep stale data */ }
-        spinnerRow.classList.add('hidden');
+
+        // Update local state on success
+        const issue = allIssues.find(i => i.number === issueNumber);
+        if (issue) {
+          issue.title = newTitle;
+          issue.title_check = TITLE_PATTERN.test(newTitle);
+        }
         renderIssues();
+      } catch (err) {
+        renderIssues(); // restore original state
         alert('Failed to update title on GitHub: ' + err.message);
       }
     }
@@ -946,6 +946,10 @@
     async function addToProject(el) {
       const issueNumber = parseInt(el.dataset.issue);
       const nodeId = el.dataset.nodeId;
+
+      // Show spinner while loading
+      el.innerHTML = '<span class="inline-spinner"></span>';
+      el.style.pointerEvents = 'none';
 
       try {
         const r = await fetch(`/api/issues/${issueNumber}/add-to-project`, {
