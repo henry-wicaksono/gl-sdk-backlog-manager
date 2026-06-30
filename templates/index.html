@@ -312,9 +312,34 @@
     }
 
     .col-num { width: 80px; }
-    .col-check { width: 100px; text-align: center; }
-    .title-fix { cursor: pointer; }
-    .title-fix:hover { opacity: 0.7; }
+    .col-check {
+      width: 100px;
+      text-align: center;
+      cursor: help;
+      text-decoration: underline dotted var(--text-muted);
+      text-underline-offset: 4px;
+    }
+    .col-check:hover {
+      color: var(--accent);
+      text-decoration-color: var(--accent);
+    }
+    .title-fix {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      transition: background .15s, transform .15s;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .title-fix:hover {
+      background: rgba(248, 81, 73, 0.15);
+      transform: scale(1.15);
+    }
+    .title-fix:active { transform: scale(.95); }
 
     .title-editor { display: flex; flex-direction: column; gap: 6px; }
     .title-editor-input {
